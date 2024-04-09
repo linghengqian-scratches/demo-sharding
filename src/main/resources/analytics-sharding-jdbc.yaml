@@ -1,0 +1,53 @@
+# 元数据持久模式配置
+mode:
+  type: Standalone
+  repository:
+    type: JDBC
+# 数据源配置
+dataSources:
+  # 主库
+  write_ds: # 逻辑名称
+    dataSourceClassName: com.zaxxer.hikari.HikariDataSource
+    driverClassName: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://47.242.55.236:13306/analytics?useUnicode=true&characterEncoding=utf8
+    username: analytics
+    password: d5rPiHzxwWMGwGtZ
+  # 从库
+  read_ds:
+    dataSourceClassName: com.zaxxer.hikari.HikariDataSource
+    driverClassName: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://47.242.55.236:13306/analytics?useUnicode=true&characterEncoding=utf8
+    username: analytics
+    password: d5rPiHzxwWMGwGtZ
+
+# 规则配置
+rules:
+  # 读写分离配置
+  - !READWRITE_SPLITTING
+    # 数据源
+    dataSources:
+      # 读写分离逻辑数据源名称
+      readwrite_ds:
+        # 写库数据源名称
+        writeDataSourceName: write_ds
+        # 读库数据源名称，多个从数据源用逗号分隔
+        readDataSourceNames:
+          - read_ds
+  - !SHARDING
+    shardingAlgorithms:
+      analytics_event_inline:
+        type: INLINE
+        props:
+          algorithm-expression: readwrite_ds.analytics_event_${record_id % 10}
+    tables:
+      analytics_event:
+        actualDataNodes: readwrite_ds.analytics_event_${0..9}}
+        tableStrategy:
+          standard:
+            shardingColumn: record_id
+            shardingAlgorithmName: analytics_event_inline
+
+
+props:
+  # 是否打印 SQL
+  sql-show: true
