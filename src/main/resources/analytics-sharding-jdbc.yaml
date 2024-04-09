@@ -8,17 +8,17 @@ dataSources:
   # 主库
   write_ds: # 逻辑名称
     dataSourceClassName: com.zaxxer.hikari.HikariDataSource
-    driverClassName: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://47.242.55.236:13306/analytics?useUnicode=true&characterEncoding=utf8
-    username: analytics
-    password: d5rPiHzxwWMGwGtZ
+    driverClassName: org.h2.Driver
+    jdbcUrl: jdbc:h2:mem:analytics;MODE=MYSQL;IGNORECASE=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE;INIT=RUNSCRIPT FROM 'src/main/resources/db/init.sql'
+    username: root
+    password:
   # 从库
   read_ds:
     dataSourceClassName: com.zaxxer.hikari.HikariDataSource
-    driverClassName: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://47.242.55.236:13306/analytics?useUnicode=true&characterEncoding=utf8
-    username: analytics
-    password: d5rPiHzxwWMGwGtZ
+    driverClassName: org.h2.Driver
+    url: jdbc:h2:mem:analytics;MODE=MYSQL;IGNORECASE=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE
+    username: root
+    password:
 
 # 规则配置
 rules:
@@ -38,10 +38,10 @@ rules:
       analytics_event_inline:
         type: INLINE
         props:
-          algorithm-expression: readwrite_ds.analytics_event_${record_id % 10}
+          algorithm-expression: analytics_event_${record_id % 10}
     tables:
       analytics_event:
-        actualDataNodes: readwrite_ds.analytics_event_${0..9}}
+        actualDataNodes: readwrite_ds.analytics_event_${0..9}
         tableStrategy:
           standard:
             shardingColumn: record_id
